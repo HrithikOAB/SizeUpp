@@ -21,12 +21,12 @@ import random
 # from nltk.tokenize import word_tokenize
 # nltk.download('punkt')
 import spacy
-from spacy.matcher import PhraseMatcher
+# from spacy.matcher import PhraseMatcher
 from django.db.models import Q
 
-from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification
+# from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification
 from django.db.models import Q
-from spacy.matcher import PhraseMatcher
+# from spacy.matcher import PhraseMatcher
 # get cart itms and wishlist items -----------------------
 
 

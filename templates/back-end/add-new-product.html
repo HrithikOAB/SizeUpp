@@ -570,7 +570,7 @@
                     });
 
                     function updateURL() {
-                        var url = 'https://traxzen.pythonanywhere.com/dashboard/add-product?';
+                        var url = 'http://127.0.0.1:8989/dashboard/add-product?';
 
                         if (categoryDropdown && categoryDropdown.value) {
                             url += 'category_id=' + categoryDropdown.value;
@@ -597,7 +597,7 @@
         });
 
         function updateURL() {
-            var url = 'https://traxzen.pythonanywhere.com/dashboard/add-product?';
+            var url = 'http://127.0.0.1:8989/add-product?';
 
             if (categoryDropdown.value != "") {
                 url += 'category_id=' + categoryDropdown.value;

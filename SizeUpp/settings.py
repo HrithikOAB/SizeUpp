@@ -36,13 +36,14 @@ INSTALLED_APPS = [
     'ckeditor',
     'crispy_forms',
     'taggit',
+    'rest_framework',
     'rest_framework.authtoken',
     "corsheaders",
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
-    # 'drf_yasg',
+    'drf_yasg',
     # 'background_task',
     
 
@@ -115,7 +116,6 @@ MIDDLEWARE = [
      'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
         'allauth.account.middleware.AccountMiddleware',
-
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
@@ -178,12 +178,10 @@ USE_TZ = True
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
-#static files
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'staticfiles')]
-
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
 
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

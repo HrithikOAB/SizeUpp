@@ -152,72 +152,105 @@ def validate_token(request):
 
 
 @csrf_protect
-@api_view(['POST'])
+@api_view(["POST"])
 def signup(request):
-    if request.user.is_authenticated:
-        return Response( status=status.HTTP_407_PROXY_AUTHENTICATION_REQUIRED)
-    
-    else:
-        if request.method == 'POST':
-            first_name = request.data.get('first_name')
-            last_name = request.data.get('last_name')
-            email = request.data.get('email')
-            phone = request.data.get('phone')
-            password1 = request.data.get('password')
-            newsletter = request.data.get('newsletter')
-            # newsletter = True/False
-            if newsletter == "on":
-                newsletter = True
-            else:
-                newsletter = False
+    # Get request data
+    first_name = request.data.get("first_name", "").strip()
+    last_name = request.data.get("last_name", "").strip()
+    email = request.data.get("email", "").strip().lower()
+    phone = request.data.get("phone", "").strip()
+    password = request.data.get("password", "")
+    newsletter = request.data.get("newsletter", False)
 
-            if not email  or not phone or not password1:
-                message='Require fileds'
-                return Response( {'message':message},status=status.HTTP_208_ALREADY_REPORTED)
-            
-            if User.objects.filter(username=email).exists():
-                message='Email Alrady Registered !!'
-                return Response( {'message':message},status=status.HTTP_208_ALREADY_REPORTED)
-            
-            if User.objects.filter(email=email).exists():
-                message='Email Alrady Registered !!'
-                return Response( {'message':message},status=status.HTTP_208_ALREADY_REPORTED)
-            
-            if User.objects.filter(phone=phone).exists():
-                message='Phone numeber is already registered !!'
-                return Response( {'message':message},status=status.HTTP_208_ALREADY_REPORTED)
-            
+    # Convert newsletter value to boolean
+    if isinstance(newsletter, str):
+        newsletter = newsletter.lower() in ["true", "1", "yes", "on"]
 
-            user = User.objects.create(
-                first_name=first_name,
-                last_name=last_name,
-                email=email,
-                username=email,
-                phone=phone,
-                newsletter=newsletter,
-            )
-            user.set_password(password1)
-            user.save()
-            user = authenticate(request, username=email, password=password1)
+    # Validate required fields
+    if not email or not phone or not password:
+        return Response(
+            {
+                "message": "Email, phone number and password are required."
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
-            login(request, user)
+    # Check existing email
+    if User.objects.filter(email=email).exists():
+        return Response(
+            {
+                "message": "Email is already registered."
+            },
+            status=status.HTTP_409_CONFLICT,
+        )
 
-            # send_welcome_email(user)
-            token, created = Token.objects.get_or_create(user=user)
-            
-            # send otp to mobile
-            
-            # send_welcome_email(user)
-            return Response({
-                        'message': 'Login successful.',
-                        'user_verified': user.is_verified,
-                        'token': token.key,  # Include the token in the response
-                    }, status=status.HTTP_200_OK)
+    # Check existing username
+    if User.objects.filter(username=email).exists():
+        return Response(
+            {
+                "message": "Email is already registered."
+            },
+            status=status.HTTP_409_CONFLICT,
+        )
 
-        else:
-            return Response( status=status.HTTP_502_BAD_GATEWAY)
-        
-        
+    # Check existing phone number
+    if User.objects.filter(phone=phone).exists():
+        return Response(
+            {
+                "message": "Phone number is already registered."
+            },
+            status=status.HTTP_409_CONFLICT,
+        )
+
+    # Create user
+    user = User.objects.create_user(
+        username=email,
+        email=email,
+        password=password,
+        first_name=first_name,
+        last_name=last_name,
+        phone=phone,
+        newsletter=newsletter,
+    )
+
+    # Authenticate user
+    authenticated_user = authenticate(
+        request,
+        username=email,
+        password=password,
+    )
+
+    if authenticated_user is None:
+        return Response(
+            {
+                "message": "User created, but authentication failed."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+    # Create Django session
+    login(request, authenticated_user)
+
+    # Create/get DRF token
+    token, created = Token.objects.get_or_create(
+        user=authenticated_user
+    )
+
+    return Response(
+        {
+            "message": "Signup successful.",
+            "user": {
+                "id": authenticated_user.id,
+                "first_name": authenticated_user.first_name,
+                "last_name": authenticated_user.last_name,
+                "email": authenticated_user.email,
+                "phone": authenticated_user.phone,
+                "is_verified": authenticated_user.is_verified,
+            },
+            "token": token.key,
+        },
+        status=status.HTTP_201_CREATED,
+    )
 
         
 @api_view(['GET'])
@@ -732,7 +765,7 @@ def del_cart(request, slug):
 from .ccavutil import encrypt,decrypt
 # from .Responsehandle import res
 from string import Template
-from pay_ccavenue import CCAvenue
+# from pay_ccavenue import CCAvenue
 from django.http import HttpResponse 
 
 def ccavResponseHandler():

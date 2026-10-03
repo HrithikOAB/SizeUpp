@@ -20,6 +20,9 @@ from django.db.models import Q
 from django.core.serializers.json import DjangoJSONEncoder
 
 
+  
+
+
 def dashboard(request):
       if not request.user.is_authenticated:
         return redirect('dashboard_signin')
@@ -34,13 +37,9 @@ def dashboard(request):
       try:
             revenue = round(Order.objects.filter(order_cancel=False,order_return=False).aggregate(total_revenue=Sum('payment_amount'))['total_revenue'],2)
 
-      
       except:
             revenue = 0
-      # revenue_data = Order.objects.filter(order_cancel=False,order_return = False).values('created_at').annotate(revenue=Sum('payment_amount')).order_by('created_at')
-            
-      #             # Convert the queryset to JSON
-      # revenue_data = json.dumps(list(revenue_data), cls=DjangoJSONEncoder)
+   
       
       top_selling_products = Product.objects.annotate(
       order_count=Count('orderitem__product'),
@@ -168,7 +167,7 @@ def category_crud(request):
         
         else:
             category = ProductCategory.objects.get(id=category_id)
-            brands = Brand.objects.all()[::-1]
+            brands = []
             return render(request,'back-end/add-new-category.html',{'title':'Update Category','category':category,'brands':brands})
     
 
@@ -181,9 +180,9 @@ def category_crud(request):
         category.delete()
         return redirect('category_dashboard')
     else:
-         brands = Brand.objects.all()[::-1]
-         categories = ProductCategory.objects.all()[::-1]
-         subcategories = ProductSubCategory.objects.all()[::-1]
+         brands = []
+         categories = ProductCategory.objects.all().order_by('-created_at')
+         subcategories = ProductSubCategory.objects.all().order_by('-created_at')
          return render(request,'back-end/add-new-category.html',{'title':'Update Category','brands':brands,'slug':'Add','categories':categories,'subcategories':subcategories})
     
     
@@ -311,8 +310,8 @@ def sub_subcategory_by_id(request):
                return JsonResponse({'message':'done'},safe=True)
             return redirect('sub_category_dashboard')
          else:
-                categories = ProductCategory.objects.all()[::-1] 
-                subcategories = ProductSubCategory.objects.all()[::-1]
+                categories = ProductCategory.objects.all().order_by('-created_at')
+                subcategories = ProductSubCategory.objects.all().order_by('-created_at')
                 return render(request,'back-end/add-new--sub-sub-category.html',{'slug':'Add','categories':categories,'subcategories':subcategories})
 
 
@@ -369,7 +368,7 @@ def Products_dashboard(request):
          messages.error(request,"Not Allowed")
          return redirect('dashboard')
      
-      products = Product.objects.all() .order_by('created_at')
+      products = Product.objects.all().order_by('created_at')
       serializer =product_serializer(products,many=True)
       action = request.GET.get('action')
 
@@ -425,7 +424,7 @@ def addproduct(request):
                   fabric_detail=fabric_detail,
                   Washcare=Washcare,
                   name = product_name,
-                  gender=gender,
+                  # gender=gender,
                   category = ProductCategory.objects.get(id=category_id),
                   subcategory =ProductSubCategory.objects.get(id=subcategory_id),
                   color_family = ColourFamily.objects.get(name=colour_family),
@@ -440,22 +439,22 @@ def addproduct(request):
                   
             )
             product.save()
-            sqp_list =request.session['sqp_list']
-            print("!!!!!!!!!!!!!!!!!!!!!!",sqp_list)
-            for i  in sqp_list:
-                  sqp =SizeQuantityPrice.objects.create(id= i['id'])
-                  sqp.size = i['size']
-                  sqp.ean_code = i['ean_code']
-                  sqp.quantity = i['quantity']
-                  sqp.inches=i['inches']
-                  # sqp.centimeter = i['centimeter']
-                  sqp.length = i['length']
-                  sqp.width = i['width']
-                  sqp.height = i['height']
-                  sqp.weight = i['weight']
-                  sqp.save()
-                  product.sqp.add(sqp)
-                  product.save()
+            # sqp_list =request.session['sqp_list']
+            # print("!!!!!!!!!!!!!!!!!!!!!!",sqp_list)
+            # for i  in sqp_list:
+            #       sqp =SizeQuantityPrice.objects.create(id= i['id'])
+            #       sqp.size = i['size']
+            #       sqp.ean_code = i['ean_code']
+            #       sqp.quantity = i['quantity']
+            #       sqp.inches=i['inches']
+            #       # sqp.centimeter = i['centimeter']
+            #       sqp.length = i['length']
+            #       sqp.width = i['width']
+            #       sqp.height = i['height']
+            #       sqp.weight = i['weight']
+            #       sqp.save()
+            #       product.sqp.add(sqp)
+            #       product.save()
                   
                   
             try :
@@ -465,11 +464,11 @@ def addproduct(request):
             return redirect('products_dashboard')
 
 
-      categories = ProductCategory.objects.all()[::-1]
+      categories = ProductCategory.objects.all().order_by('-created_at')
       
       if request.GET.get('category_id'):
             selected_category = ProductCategory.objects.get(id=request.GET.get('category_id'))
-            subcategories = ProductSubCategory.objects.filter(category=selected_category)[::-1]
+            subcategories = ProductSubCategory.objects.filter(category=selected_category).order_by('-created_at')
       else:
             selected_category =None
             subcategories = None

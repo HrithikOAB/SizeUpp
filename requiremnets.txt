@@ -23,9 +23,7 @@ numpy==1.26.2
 oauthlib==3.2.2
 openpyxl==3.1.2
 packaging==23.2
-pandas==2.1.4
 paypalrestsdk==1.13.3
-Pillow==10.1.0
 pycparser==2.21
 PyJWT==2.8.0
 pyOpenSSL==23.3.0
